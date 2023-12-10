@@ -9,13 +9,9 @@ export const userResolvers = {
         user: async (_: any, args: UserArgs) => {
             return await User.findById(args.id).lean();
         },
-        users: async (_: any, args: UsersArgs) => {
-            const page = args.page || 1;
-            const pageSize = args.pageSize || 10;
-            return await User.find()
-                .skip((page - 1) * pageSize)
-                .limit(pageSize)
-                .lean();
+        users: async (): Promise<IUser[]> => {
+            const users = await User.find().lean();
+            return users;
         },
     },
     Mutation: {

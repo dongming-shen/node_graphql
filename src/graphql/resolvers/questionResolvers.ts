@@ -9,16 +9,9 @@ export const questionResolvers = {
         question: async (_: any, args: QuestionArgs) => {
             return await Question.findById(args.id).lean();
         },
-        questions: async (_: any, args: QuestionsArgs): Promise<IQuestion[]> => {
-
-            const page = args.page || 1;
-            const pageSize = args.pageSize || 10;
-            console.log('===ran');
-            console.log('===ran2');
-            return await Question.find()
-                .skip((page - 1) * pageSize)
-                .limit(pageSize)
-                .lean();
+        questions: async (): Promise<IQuestion[]> => {
+            const questions = await Question.find().lean();
+            return questions;
         },
     },
     Mutation: {
