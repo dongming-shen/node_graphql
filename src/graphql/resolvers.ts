@@ -1,8 +1,5 @@
-import {Question, IQuestion} from '../models/questionModel';
-import {User, IUser} from '../models/userModel';
 import {questionResolvers} from './resolvers/questionResolvers';
 import {userResolvers} from './resolvers/userResolvers';
-// import {QuestionsArgs} from './types';
 
 export interface QuestionInput {
     title: string;

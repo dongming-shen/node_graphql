@@ -14,10 +14,10 @@ export const questionResolvers = {
         },
     },
     Query: {
-        question: async (args: QuestionArgs): Promise<IQuestion | null> => {
+        question: async (_: any, args: QuestionArgs): Promise<IQuestion | null> => {
             return await Question.findById(args.id).lean();
         },
-        questions: async (): Promise<IQuestion[]> => {
+        questions: async (_: any): Promise<IQuestion[]> => {
             const questions = await Question.find().lean();
             return questions;
         },

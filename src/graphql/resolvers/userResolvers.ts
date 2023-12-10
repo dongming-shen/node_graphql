@@ -14,23 +14,23 @@ export const userResolvers = {
         },
     },
     Query: {
-        user: async (args: UserArgs): Promise<IUser | null> => {
+        user: async (_: any, args: UserArgs): Promise<IUser | null> => {
             return await User.findById(args.id).lean();
         },
-        users: async (): Promise<IUser[]> => {
+        users: async (_: any): Promise<IUser[]> => {
             const users = await User.find().lean();
             return users;
         },
     },
     Mutation: {
-        createUser: async (args: CreateUserArgs): Promise<IUser> => {
+        createUser: async (_: any, args: CreateUserArgs): Promise<IUser> => {
             const newUser = new User(args);
             return await newUser.save();
         },
-        updateUser: async (args: UpdateUserArgs): Promise<IQuestion | null> => {
+        updateUser: async (_: any, args: UpdateUserArgs): Promise<IQuestion | null> => {
             return await User.findByIdAndUpdate(args.id, args, {new: true}).lean();
         },
-        deleteUser: async (args: UserArgs): Promise<string> => {
+        deleteUser: async (_: any, args: UserArgs): Promise<string> => {
             await User.findByIdAndDelete(args.id);
             return args.id;
         },
