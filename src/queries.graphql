@@ -1,0 +1,28 @@
+# Fetching all questions along with their authors
+query GetQuestions {
+  questions {
+    id
+    title
+    content
+    author {
+      id
+      name
+      # Add other User fields as needed
+    }
+  }
+}
+
+# Creating a new question
+mutation CreateQuestion($input: QuestionInput) {
+  createQuestion(input: $input) {
+    id
+    title
+    content
+    author {
+      id
+      name
+    }
+  }
+}
+
+# ... more queries and mutations
