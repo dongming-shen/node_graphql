@@ -1,7 +1,3 @@
-import {buildSchema} from 'graphql';
-
-// Base type definitions
-export const typeDefs = `
 type User {
   id: ID!
   name: String!
@@ -15,20 +11,14 @@ type Question {
   content: String!
   author: User
 }
-`;
 
-// Query type definitions
-export const queryDefs = `
 type Query {
   user(id: ID!): User
   users(page: Int, pageSize: Int): [User]
   question(id: ID!): Question
   questions(page: Int, pageSize: Int): [Question]
 }
-`;
 
-// Mutation type definitions
-export const mutationDefs = `
 type Mutation {
   createUser(name: String!, email: String!): User
   updateUser(id: ID!, name: String, email: String): User
@@ -39,12 +29,3 @@ type Mutation {
   deleteQuestion(id: ID!): String
   deleteAllQuestions: [Question]
 }
-`;
-
-const schema = buildSchema(`
-  ${typeDefs}
-  ${queryDefs}
-  ${mutationDefs}
-`);
-
-export default schema;
