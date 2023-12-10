@@ -1,6 +1,8 @@
 // userRoutes.ts
 import express from 'express';
-import {User} from '../models/userModel'; // Adjust the import path as needed
+import {User} from '../models/userModel'; // Adjust the import path as neede
+import {Question} from '../models/questionModel';
+
 
 const router = express.Router();
 
@@ -85,5 +87,24 @@ router.delete('/:id', async (req, res) => {
         }
     }
 });
+
+// ... other imports and route definitions ...
+
+// GET all questions for a specific user
+router.get('/:userId/questions', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const questions = await Question.find({authorId: userId}).lean();
+        res.json(questions);
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).json({message: error.message});
+        } else {
+            res.status(500).json({message: "An unknown error occurred"});
+        }
+    }
+});
+
+// ... other route definitions ...
 
 export default router;

@@ -7,6 +7,7 @@ exports.typeDefs = `
 type User {
   id: ID!
   name: String!
+  email: String!
   questions(page: Int, pageSize: Int): [Question]
 }
 
@@ -15,12 +16,6 @@ type Question {
   title: String!
   content: String!
   author: User
-}
-
-input QuestionInput {
-  title: String!
-  content: String!
-  authorId: String!
 }
 `;
 // Query type definitions
@@ -35,12 +30,14 @@ type Query {
 // Mutation type definitions
 exports.mutationDefs = `
 type Mutation {
-  createUser(name: String!): User
-  updateUser(id: ID!, name: String!): User
+  createUser(name: String!, email: String!): User
+  updateUser(id: ID!, name: String, email: String): User
   deleteUser(id: ID!): String
-  createQuestion(input: QuestionInput): Question
-  updateQuestion(id: ID!, input: QuestionInput): Question
+  deleteAllUsers: [User]
+  createQuestion(title: String!, content: String!, authorId: String!): Question
+  updateQuestion(id: ID!, title: String, content: String, authorId: String): Question
   deleteQuestion(id: ID!): String
+  deleteAllQuestions: [Question]
 }
 `;
 const schema = (0, graphql_1.buildSchema)(`

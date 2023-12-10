@@ -28,7 +28,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const QuestionSchema = new mongoose_1.Schema({
     title: { type: String, required: true },
     content: { type: String, required: true },
-    authorId: { type: String, required: true },
+    authorId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to User model
     // include any other fields your question model needs
 }, { timestamps: true });
 exports.Question = mongoose_1.default.model('Question', QuestionSchema);
