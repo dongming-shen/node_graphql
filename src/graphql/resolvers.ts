@@ -12,27 +12,14 @@ export interface QuestionInput {
 
 export const userResolvers = {
     Query: {
+        users: async (): Promise<IUser[]> => {
+            console.log('====users');
+            const users = await User.find().lean();
+            return users;
+        },
+
         async user (args: {id: string}): Promise<IUser | null> {
             return await User.findById(args.id).lean();
-        },
-
-        async users (args: {page?: number, pageSize?: number}): Promise<IUser[]> {
-            const page = args.page || 1;
-            const pageSize = args.pageSize || 10;
-
-            const users = await User.find()
-                .skip((page - 1) * pageSize)
-                .limit(pageSize)
-                .lean();
-            console.log(users, 'users');
-            return users.map(user => ({
-                ...user,
-                id: user._id.toString(),  // Transform MongoDB _id to GraphQL id
-            }));
-        },
-
-        async userQuestions (parent: IUser): Promise<IQuestion[]> {
-            return await Question.find({authorId: parent.id}).lean();
         },
     }
 };
@@ -44,10 +31,8 @@ export const questionResolvers = {
         // Question resolvers
         questions: async (): Promise<IQuestion[]> => {
             const questions = await Question.find().lean();
-            return questions.map(q => ({
-                ...q,
-                id: q._id.toString(),  // Transform MongoDB _id to GraphQL id
-            }));
+            console.log('wuuut======', questions);
+            return questions;
         },
         question: async (args: {id: string}): Promise<IQuestion | null> => {
             const question = await Question.findById(args.id).lean();
@@ -85,10 +70,6 @@ export const questionResolvers = {
             await Question.findByIdAndDelete(args.id);
             return "Question deleted";
         },
-
-        questionAuthor: async (parent: IQuestion): Promise<IUser | null> => {
-            return await User.findById(parent.authorId).lean();
-        },
     }
 };
 
@@ -97,23 +78,30 @@ export const resolvers = {
         id: (user: IUser) => user._id,
         name: (user: IUser) => user.name,
         email: (user: IUser) => user.email,
-        questions: async (user: IUser, args: QuestionsArgs): Promise<IQuestion[]> => {
-            const page = args.page || 1;
-            const pageSize = args.pageSize || 10;
-            return await Question.find({authorId: user.id})
-                .skip((page - 1) * pageSize)
-                .limit(pageSize);
+        questions: async (user: IUser): Promise<IQuestion[]> => {
+            return await Question.find({authorId: user._id});
         },
     },
     Question: {
         id: (question: IQuestion) => question._id,
         title: (question: IQuestion) => question.title,
         content: (question: IQuestion) => question.content,
-        author: async (question: IQuestion) => {
+        author: async (question: IQuestion): Promise<IUser | null> => {
             return await User.findById(question.authorId);
         },
     },
-    ...userResolvers,
-    ...questionResolvers,
+    Query: {
+        users: async (): Promise<IUser[]> => {
+            const users = await User.find().lean();
+            return users;
+        },
+        questions: async (): Promise<IQuestion[]> => {
+            const questions = await Question.find().lean();
+            return questions;
+        },
+
+    }
+    // ...userResolvers,
+    // ...questionResolvers,
     // Here you can add other resolvers, if any...
 };
