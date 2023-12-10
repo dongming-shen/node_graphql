@@ -1,12 +1,20 @@
 // questionResolvers.ts
 
 import {IQuestion, Question} from '../../models/questionModel';
-import {User} from '../../models/userModel';
-import {QuestionArgs, QuestionsArgs, CreateQuestionArgs, UpdateQuestionArgs} from '../types';
+import {IUser, User} from '../../models/userModel';
+import {QuestionArgs, CreateQuestionArgs, UpdateQuestionArgs} from '../types';
 
 export const questionResolvers = {
+    Question: {
+        id: (question: IQuestion) => question._id,
+        title: (question: IQuestion) => question.title,
+        content: (question: IQuestion) => question.content,
+        author: async (question: IQuestion): Promise<IUser | null> => {
+            return await User.findById(question.authorId);
+        },
+    },
     Query: {
-        question: async (_: any, args: QuestionArgs) => {
+        question: async (args: QuestionArgs): Promise<IQuestion | null> => {
             return await Question.findById(args.id).lean();
         },
         questions: async (): Promise<IQuestion[]> => {
@@ -15,25 +23,21 @@ export const questionResolvers = {
         },
     },
     Mutation: {
-        createQuestion: async (_: any, args: CreateQuestionArgs) => {
+        createQuestion: async (_: any, args: CreateQuestionArgs): Promise<IQuestion> => {
             const newQuestion = new Question(args);
             return await newQuestion.save();
         },
-        updateQuestion: async (_: any, args: UpdateQuestionArgs) => {
+        updateQuestion: async (_: any, args: UpdateQuestionArgs): Promise<IQuestion | null> => {
             return await Question.findByIdAndUpdate(args.id, args, {new: true}).lean();
         },
-        deleteQuestion: async (_: any, args: QuestionArgs) => {
+        deleteQuestion: async (_: any, args: QuestionArgs): Promise<string> => {
             await Question.findByIdAndDelete(args.id);
-            return `Question with ID ${args.id} deleted`;
+            return args.id;
         },
-        deleteAllQuestions: async () => {
+        deleteAllQuestions: async (): Promise<IQuestion[]> => {
             await Question.deleteMany({});
-            return `All questions deleted`;
-        },
-    },
-    Question: {
-        author: async (question: IQuestion) => {
-            return await User.findById(question.authorId);
+            const questions = await Question.find().lean();
+            return questions;
         },
     },
 };

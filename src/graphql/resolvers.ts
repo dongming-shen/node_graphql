@@ -77,26 +77,18 @@ export interface QuestionInput {
 
 export const resolvers = {
     User: {
-        id: (user: IUser) => user._id,
-        name: (user: IUser) => user.name,
-        email: (user: IUser) => user.email,
-        questions: async (user: IUser): Promise<IQuestion[]> => {
-            return await Question.find({authorId: user._id});
-        },
+        ...userResolvers.User,
     },
     Question: {
-        id: (question: IQuestion) => question._id,
-        title: (question: IQuestion) => question.title,
-        content: (question: IQuestion) => question.content,
-        author: async (question: IQuestion): Promise<IUser | null> => {
-            return await User.findById(question.authorId);
-        },
+        ...questionResolvers.Question,
     },
     Query: {
         ...userResolvers.Query,
         ...questionResolvers.Query,
+    },
+    Mutation: {
+        ...userResolvers.Mutation,
+        ...questionResolvers.Mutation,
     }
-    // ...userResolvers,
-    // ...questionResolvers,
     // Here you can add other resolvers, if any...
 };

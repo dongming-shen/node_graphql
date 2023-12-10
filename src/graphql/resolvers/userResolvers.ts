@@ -1,12 +1,20 @@
 // userResolvers.ts
 
-import {Question} from '../../models/questionModel';
+import {IQuestion, Question} from '../../models/questionModel';
 import {IUser, User} from '../../models/userModel';
-import {UserArgs, UsersArgs, CreateUserArgs, UpdateUserArgs, QuestionsArgs} from '../types';
+import {UserArgs, CreateUserArgs, UpdateUserArgs} from '../types';
 
 export const userResolvers = {
+    User: {
+        id: (user: IUser) => user._id,
+        name: (user: IUser) => user.name,
+        email: (user: IUser) => user.email,
+        questions: async (user: IUser): Promise<IQuestion[]> => {
+            return await Question.find({authorId: user._id});
+        },
+    },
     Query: {
-        user: async (_: any, args: UserArgs) => {
+        user: async (args: UserArgs): Promise<IUser | null> => {
             return await User.findById(args.id).lean();
         },
         users: async (): Promise<IUser[]> => {
@@ -15,29 +23,21 @@ export const userResolvers = {
         },
     },
     Mutation: {
-        createUser: async (_: any, args: CreateUserArgs) => {
+        createUser: async (args: CreateUserArgs): Promise<IUser> => {
             const newUser = new User(args);
             return await newUser.save();
         },
-        updateUser: async (_: any, args: UpdateUserArgs) => {
+        updateUser: async (args: UpdateUserArgs): Promise<IQuestion | null> => {
             return await User.findByIdAndUpdate(args.id, args, {new: true}).lean();
         },
-        deleteUser: async (_: any, args: UserArgs) => {
+        deleteUser: async (args: UserArgs): Promise<string> => {
             await User.findByIdAndDelete(args.id);
-            return `User with ID ${args.id} deleted`;
+            return args.id;
         },
-        deleteAllUsers: async () => {
+        deleteAllUsers: async (): Promise<IUser[]> => {
             await User.deleteMany({});
-            return `All users deleted`;
-        },
-    },
-    User: {
-        questions: async (user: IUser, args: QuestionsArgs) => {
-            const page = args.page || 1;
-            const pageSize = args.pageSize || 10;
-            return await Question.find({authorId: user.id})
-                .skip((page - 1) * pageSize)
-                .limit(pageSize);
+            const users = await User.find().lean();
+            return users;
         },
     },
 };
