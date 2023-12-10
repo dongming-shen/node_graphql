@@ -32,7 +32,15 @@ export const userResolvers = {
         },
         deleteUser: async (_: any, args: UserArgs): Promise<string> => {
             await User.findByIdAndDelete(args.id);
-            return args.id;
+            return args.id;// this should be an obj instead, but it's ok
+            /*
+            mutation {
+  deleteUser(id: "<USER_ID>")
+}
+
+API not right
+
+            */
         },
         deleteAllUsers: async (): Promise<IUser[]> => {
             await User.deleteMany({});
