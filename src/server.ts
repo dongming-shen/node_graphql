@@ -9,10 +9,7 @@ import {ApolloServer} from "@apollo/server";
 import {buildSubgraphSchema} from "@apollo/subgraph";
 import {expressMiddleware} from "@apollo/server/express4";
 import {readFileSync} from "fs";
-import {resolve, dirname} from "path";
-
-import {fileURLToPath} from 'url';
-
+import {resolve} from "path";
 
 const app = express();
 const port = 3005;
