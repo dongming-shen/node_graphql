@@ -22,8 +22,11 @@ export const userResolvers = {
             .skip((page - 1) * pageSize)
             .limit(pageSize)
             .lean();
-
-        return users;
+        console.log(users, 'users');
+        return users.map(user => ({
+            ...user,
+            id: user._id.toString(),  // Transform MongoDB _id to GraphQL id
+        }));;
     },
 
     userQuestions: async (parent: IUser): Promise<IQuestion[]> => {
