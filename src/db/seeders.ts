@@ -1,9 +1,12 @@
 // src/db/seeders.ts
-import { User } from "../models/userModel";
-import mongoose from "mongoose";
-import connectDB from "./index";
 import fs from "fs";
+
 import csv from "csv-parser";
+import mongoose from "mongoose";
+
+import { IUser, User } from "../models/userModel";
+
+import connectDB from "./index";
 
 // Example user data
 const users = [
@@ -12,7 +15,7 @@ const users = [
   // Add more user objects
 ];
 
-const seedUsers = async () => {
+export const seedUsers = async () => {
   try {
     await User.deleteMany(); // Clear the existing users
     await User.insertMany(users); // Insert new users
@@ -23,8 +26,8 @@ const seedUsers = async () => {
 };
 ////
 
-const seedUsersFromCSV = async (filePath: string) => {
-  const users = [];
+export const seedUsersFromCSV = async (filePath: string) => {
+  const users: IUser[] = [];
 
   fs.createReadStream(filePath)
     .pipe(csv())
@@ -49,10 +52,8 @@ seedUsersFromCSV(filePath);
 /////
 
 // Connect to the database and run seeders
-const runSeeders = async () => {
+export const runSeeders = async () => {
   await connectDB();
   await seedUsers();
   mongoose.disconnect(); // Disconnect when done
 };
-
-runSeeders();

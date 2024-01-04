@@ -1,10 +1,15 @@
-// userResolvers.ts
-
+import { hash, compare } from "bcryptjs";
+import { sign } from "jsonwebtoken";
 import { IQuestion, Question } from "../../models/questionModel";
 import { IUser, User } from "../../models/userModel";
-import { UserArgs, CreateUserArgs, UpdateUserArgs, AuthArgs } from "../types";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { addTokenToBlacklist } from "../../utils/tokenBlacklist";
+import {
+  UserArgs,
+  CreateUserArgs,
+  UpdateUserArgs,
+  AuthArgs,
+  LogoutArgs,
+} from "../types";
 
 // Define the type for authentication payload
 interface AuthPayload {
@@ -36,7 +41,7 @@ export const userResolvers = {
       _parent: unknown,
       args: CreateUserArgs,
     ): Promise<IUser> => {
-      const hashedPassword = await bcrypt.hash(args.password, 10);
+      const hashedPassword = await hash(args.password, 10);
       const newUser = new User({ ...args, password: hashedPassword });
       return await newUser.save();
     },
@@ -59,13 +64,39 @@ export const userResolvers = {
     },
     login: async (_parent: unknown, args: AuthArgs): Promise<AuthPayload> => {
       const user = await User.findOne({ email: args.email });
-      if (!user || !(await bcrypt.compare(args.password, user.password))) {
+      if (!user || !(await compare(args.password, user.password))) {
         throw new Error("Incorrect email or password");
       }
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
+      const token = sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
       return { token, user };
     },
     // Add other mutations like signup and logout if needed
+    signup: async (
+      _parent: unknown,
+      args: CreateUserArgs,
+    ): Promise<AuthPayload> => {
+      const { name, email, password } = args;
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        throw new Error("Email already in use");
+      }
+
+      const hashedPassword = await hash(password, 10);
+      const newUser = new User({ name, email, password: hashedPassword });
+      await newUser.save();
+
+      const token = sign({ id: newUser._id }, JWT_SECRET, {
+        expiresIn: "1h",
+      });
+      return { token, user: newUser };
+    },
+
+    logout: async (_parent: unknown, args: LogoutArgs): Promise<boolean> => {
+      // Assuming logoutArgs contains the token
+      const { token } = args;
+      addTokenToBlacklist(token); // Implement this function as per your blacklist logic
+      return true;
+    },
   },
 };
 

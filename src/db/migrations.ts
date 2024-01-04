@@ -1,7 +1,9 @@
 // src/db/migrations.ts
 import mongoose from "mongoose";
-import connectDB from "./index";
+
 import { User } from "../models/userModel";
+
+import connectDB from "./index";
 
 // An example migration function to add a new field to all user documents
 const addAgeFieldToUsers = async () => {

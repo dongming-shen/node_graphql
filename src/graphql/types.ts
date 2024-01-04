@@ -58,3 +58,7 @@ export interface AuthPayload {
   token: string; // JWT token
   user: IUser; // User information
 }
+
+export interface LogoutArgs {
+  token: string;
+}

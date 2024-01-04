@@ -1,4 +1,10 @@
 {
+  "baseUrl": ".",
+  "paths": {
+    "@models/*": ["src/models/*"],
+    "@utils/*": ["src/utils/*"]
+    // other paths
+  },
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",

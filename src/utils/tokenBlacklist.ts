@@ -1,9 +1,9 @@
-import jwt from "jsonwebtoken";
+import { decode } from "jsonwebtoken";
 import { BlacklistedToken } from "../models/blacklistedToken";
 
 export const addTokenToBlacklist = async (token: string) => {
   try {
-    const decodedToken = jwt.decode(token);
+    const decodedToken = decode(token);
     if (decodedToken && typeof decodedToken !== "string" && decodedToken.exp) {
       const expiresAt = new Date(decodedToken.exp * 1000);
       const blacklistedToken = new BlacklistedToken({ token, expiresAt });
