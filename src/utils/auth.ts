@@ -1,5 +1,7 @@
 // utils/auth.ts
-import { sign, verify } from "jsonwebtoken";
+import { BlockedTokenModel } from "../models/blockedTokenModel";
+
+import { decode, sign, verify } from "jsonwebtoken";
 
 import { User, IUser } from "../models/userModel"; // Adjust the import path to your user model
 
@@ -42,4 +44,38 @@ export const getUserFromToken = async (
     console.error("Error in getUserFromToken:", error);
     return null;
   }
+};
+
+export const addTokenToBlacklist = async (token: string) => {
+  try {
+    const decodedToken = decode(token);
+    if (decodedToken && typeof decodedToken !== "string" && decodedToken.exp) {
+      const expiresAt = new Date(decodedToken.exp * 1000);
+      const blockedToken = new BlockedTokenModel({ token, expiresAt });
+      await blockedToken.save();
+    }
+  } catch (error) {
+    console.error("Failed to decode token for blacklisting:", error);
+  }
+};
+
+export const isTokenBlocked = async (token: string) => {
+  const blockedToken = await BlockedTokenModel.findOne({ token });
+  if (!blockedToken) {
+    return false;
+  }
+
+  const currentTime = new Date();
+  if (blockedToken.expiresAt < currentTime) {
+    // Optionally, delete the expired token from the collection
+    await BlockedTokenModel.deleteOne({ _id: blockedToken._id });
+    return false;
+  }
+
+  return true;
+};
+
+export const cleanupExpiredTokens = async () => {
+  const currentTime = new Date();
+  await BlockedTokenModel.deleteMany({ expiresAt: { $lt: currentTime } });
 };

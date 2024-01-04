@@ -2,7 +2,7 @@ import { hash, compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { IQuestion, Question } from "../../models/questionModel";
 import { IUser, User } from "../../models/userModel";
-import { addTokenToBlacklist } from "../../utils/tokenBlacklist";
+
 import {
   UserArgs,
   CreateUserArgs,
@@ -102,3 +102,6 @@ export const userResolvers = {
 
 // Don't forget to export userResolvers
 export default userResolvers;
+function addTokenToBlacklist(token: string) {
+  throw new Error("Function not implemented.");
+}
