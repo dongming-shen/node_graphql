@@ -1,7 +1,5 @@
 // types.ts
 
-import { IUser } from "../models/userModel";
-
 export interface UserArgs {
   id: string;
 }
@@ -55,8 +53,10 @@ export interface AuthArgs {
 
 // AuthPayload that will be returned by login mutation
 export interface AuthPayload {
+  id: string;
+  email: string;
+  name: string;
   token: string; // JWT token
-  user: IUser; // User information
 }
 
 export interface LogoutArgs {

@@ -1,11 +1,11 @@
 // utils/auth.ts
 import { BlockedTokenModel } from "../models/blockedTokenModel";
 
-import { decode, sign, verify } from "jsonwebtoken";
+import { JwtPayload, decode, sign, verify } from "jsonwebtoken";
 
 import { User, IUser } from "../models/userModel"; // Adjust the import path to your user model
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; // Replace with your actual secret key
+export const JWT_SECRET = "mysecretkey"; // Replace with your actual secret key
 
 export const generateToken = (user: IUser) => {
   const payload = {
@@ -33,12 +33,14 @@ export const getUserFromToken = async (
       return null;
     }
 
-    const decoded = verify(token, JWT_SECRET);
+    const decoded = verify(token, JWT_SECRET) as JwtPayload;
+    console.log("====decoded====", decoded);
     if (!decoded.sub) {
       return null;
     }
 
     const user = await User.findById(decoded.sub);
+    console.log("====get me user====", user);
     return user;
   } catch (error) {
     console.error("Error in getUserFromToken:", error);

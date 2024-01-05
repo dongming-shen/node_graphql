@@ -12,9 +12,11 @@ type Question {
   author: User
 }
 
-type AuthPayload {
-  token: String
-  user: User
+type Me {
+  id: ID!
+  email: String!
+  name: String!
+  token: String!
 }
 
 type Query {
@@ -22,6 +24,7 @@ type Query {
   users(page: Int, pageSize: Int): [User]
   question(id: ID!): Question
   questions(page: Int, pageSize: Int): [Question]
+  me: User
 }
 
 type Mutation {
@@ -33,11 +36,7 @@ type Mutation {
   updateQuestion(id: ID!, title: String, content: String, authorId: String): Question
   deleteQuestion(id: ID!): String
   deleteAllQuestions: [Question]
-
-  signup(name: String!, email: String!, password: String!): AuthPayload
-  login(email: String!, password: String!): AuthPayload
+  signup(name: String!, email: String!, password: String!): Me
+  login(email: String!, password: String!): Me
   logout(token: String!): Boolean
 }
-
-
-

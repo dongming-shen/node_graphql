@@ -9,15 +9,16 @@ import {
   UpdateUserArgs,
   AuthArgs,
   LogoutArgs,
+  AuthPayload,
 } from "../types";
+import { MyContext } from "../../server";
+import {
+  JWT_SECRET,
+  addTokenToBlacklist,
+  generateToken,
+} from "../../utils/auth";
 
 // Define the type for authentication payload
-interface AuthPayload {
-  token: string;
-  user: IUser;
-}
-
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 export const userResolvers = {
   User: {
@@ -29,11 +30,25 @@ export const userResolvers = {
     },
   },
   Query: {
-    user: async (_parent: unknown, args: UserArgs): Promise<IUser | null> => {
+    user: async (
+      _parent: unknown,
+      args: UserArgs,
+      context: MyContext,
+    ): Promise<IUser | null> => {
       return await User.findById(args.id).lean();
     },
     users: async (): Promise<IUser[]> => {
       return await User.find().lean();
+    },
+    me: async (
+      _parent: unknown,
+      _args: unknown,
+      context: MyContext,
+    ): Promise<IUser | null> => {
+      if (!context.user) {
+        throw new Error("Not authenticated");
+      }
+      return context.user;
     },
   },
   Mutation: {
@@ -62,14 +77,24 @@ export const userResolvers = {
       await User.deleteMany({});
       return true;
     },
+
     login: async (_parent: unknown, args: AuthArgs): Promise<AuthPayload> => {
       const user = await User.findOne({ email: args.email });
+      console.log("====user=====", user, args.password, user?.password);
       if (!user || !(await compare(args.password, user.password))) {
         throw new Error("Incorrect email or password");
       }
-      const token = sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
-      return { token, user };
+
+      const token = generateToken(user);
+
+      return {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        token,
+      };
     },
+
     // Add other mutations like signup and logout if needed
     signup: async (
       _parent: unknown,
@@ -85,16 +110,28 @@ export const userResolvers = {
       const newUser = new User({ name, email, password: hashedPassword });
       await newUser.save();
 
-      const token = sign({ id: newUser._id }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
-      return { token, user: newUser };
+      const token = generateToken(newUser);
+
+      return {
+        id: newUser._id,
+        email: newUser.email,
+        name: newUser.name,
+        token,
+      };
     },
 
-    logout: async (_parent: unknown, args: LogoutArgs): Promise<boolean> => {
-      // Assuming logoutArgs contains the token
-      const { token } = args;
-      addTokenToBlacklist(token); // Implement this function as per your blacklist logic
+    // 这个有bug。logout似乎没用。
+    logout: async (
+      _parent: unknown,
+      _args: unknown,
+      context: MyContext,
+    ): Promise<boolean> => {
+      if (!context.req.headers.authorization) {
+        throw new Error("No authorization token provided");
+      }
+
+      const token = context.req.headers.authorization;
+      addTokenToBlacklist(token);
       return true;
     },
   },
@@ -102,6 +139,3 @@ export const userResolvers = {
 
 // Don't forget to export userResolvers
 export default userResolvers;
-function addTokenToBlacklist(token: string) {
-  throw new Error("Function not implemented.");
-}

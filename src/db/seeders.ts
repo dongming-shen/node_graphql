@@ -2,58 +2,47 @@
 import fs from "fs";
 
 import csv from "csv-parser";
-import mongoose from "mongoose";
-
+import { hash } from "bcryptjs";
+import connectDB from ".";
 import { IUser, User } from "../models/userModel";
-
-import connectDB from "./index";
-
-// Example user data
-const users = [
-  { name: "Alice", email: "alice@example.com", password: "password123" },
-  { name: "Bob", email: "bob@example.com", password: "password123" },
-  // Add more user objects
-];
-
-export const seedUsers = async () => {
-  try {
-    await User.deleteMany(); // Clear the existing users
-    await User.insertMany(users); // Insert new users
-    console.log("Users seeded successfully");
-  } catch (error) {
-    console.error("Error seeding users:", error);
-  }
-};
-////
 
 export const seedUsersFromCSV = async (filePath: string) => {
   const users: IUser[] = [];
 
-  fs.createReadStream(filePath)
-    .pipe(csv())
-    .on("data", (row) => users.push(row))
-    .on("end", async () => {
-      try {
-        await connectDB();
-        await User.deleteMany(); // Clear the existing users
-        await User.insertMany(users); // Insert new users
-        console.log("Users seeded successfully");
-        mongoose.disconnect();
-      } catch (error) {
-        console.error("Error seeding users:", error);
-        mongoose.disconnect();
-        process.exit(1);
-      }
-    });
+  return new Promise<void>((resolve, reject) => {
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on("data", async (row) => {
+        try {
+          // Hash the password before pushing the user to the array
+          const hashedPassword = await hash(row.password, 10);
+          users.push({ ...row, password: hashedPassword });
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on("end", async () => {
+        try {
+          await connectDB();
+          await User.deleteMany(); // Clear the existing users
+          await User.insertMany(users); // Insert new users with hashed passwords
+          console.log("Users seeded successfully");
+          resolve();
+        } catch (error) {
+          console.error("Error seeding users:", error);
+          reject(error);
+        }
+      });
+  });
 };
 
-const filePath = "./path/to/your/users.csv"; // Update this to the path of your CSV file
-seedUsersFromCSV(filePath);
+const filePath = "./users.csv"; // Update this to the path of your CSV file
+
 /////
 
 // Connect to the database and run seeders
 export const runSeeders = async () => {
   await connectDB();
-  await seedUsers();
-  mongoose.disconnect(); // Disconnect when done
+  // await seedUsers();
+  await seedUsersFromCSV(filePath);
 };

@@ -1,6 +1,5 @@
 import { schedule } from "node-cron";
-
-import { cleanupExpiredTokens } from "../utils/tokenBlacklist";
+import { cleanupExpiredTokens } from "../utils/auth";
 
 export const scheduleTokenCleanup = () => {
   schedule("0 0 * * *", async () => {

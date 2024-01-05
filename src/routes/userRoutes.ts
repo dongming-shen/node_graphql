@@ -1,14 +1,11 @@
-// userRoutes.ts
-
 import { Router } from "express";
-
-import { User } from "../models/userModel"; // Adjust the import path as neede
-import { generateToken } from "../utils/auth";
-import { addTokenToBlacklist } from "../utils/tokenBlacklist";
+import { User } from "../models/userModel";
+import { addTokenToBlacklist, generateToken } from "../utils/auth";
 import { compare, hash } from "bcryptjs";
 
 const router = Router();
 
+// Swagger components definitions
 /**
  * @swagger
  * components:
@@ -18,6 +15,7 @@ const router = Router();
  *       required:
  *         - name
  *         - email
+ *         - password
  *       properties:
  *         name:
  *           type: string
@@ -35,13 +33,20 @@ const router = Router();
  *           type: string
  *         password:
  *           type: string
- *     Token:
+ *     AuthPayload:
  *       type: object
  *       properties:
+ *         id:
+ *           type: string
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
  *         token:
  *           type: string
  */
 
+// Create a new user
 /**
  * @swagger
  * /users:
@@ -57,8 +62,6 @@ const router = Router();
  *     responses:
  *       201:
  *         description: User created successfully
- *       400:
- *         description: Bad request
  *       500:
  *         description: Server error
  */
@@ -68,16 +71,59 @@ router.post("/", async (req, res) => {
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (error) {
-    if (error instanceof Error) {
-      // Now TypeScript knows that error is of type Error
-      res.status(400).json({ message: error.message });
-    } else {
-      // Handle the case where the error is not an Error object
-      res.status(500).json({ message: "An unknown error occurred" });
-    }
+    res.status(500).json({ message: "Server error", error });
   }
 });
 
+// Signup a new user
+router.post("/signup", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
+    const hashedPassword = await hash(password, 10);
+    const newUser = new User({ name, email, password: hashedPassword });
+    await newUser.save();
+    const token = generateToken(newUser);
+    res.status(201).json({ id: newUser.id, email, name, token });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Login a user
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+    const isMatch = await compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+    const token = generateToken(user);
+    res.status(200).json({ id: user.id, email, name: user.name, token });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Logout a user
+router.post("/logout", async (req, res) => {
+  try {
+    const token = req.headers?.authorization ?? "";
+    addTokenToBlacklist(token);
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Swagger routes documentation
 /**
  * @swagger
  * /users/signup:
@@ -93,31 +139,15 @@ router.post("/", async (req, res) => {
  *     responses:
  *       201:
  *         description: Signup successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthPayload'
  *       400:
  *         description: Email already in use
  *       500:
  *         description: Server error
- */
-router.post("/signup", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already in use" });
-    }
-
-    const hashedPassword = await hash(password, 12);
-    const newUser = new User({ name, email, password: hashedPassword });
-    await newUser.save();
-
-    const token = generateToken(newUser);
-    res.status(201).json({ token, user: newUser });
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
-
-/**
+ *
  * @swagger
  * /users/login:
  *   post:
@@ -132,53 +162,25 @@ router.post("/signup", async (req, res) => {
  *     responses:
  *       200:
  *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthPayload'
  *       401:
  *         description: Invalid email or password
  *       500:
  *         description: Server error
- */
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const isMatch = await compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const token = generateToken(user);
-    res.json({ token, user });
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
-
-/**
+ *
  * @swagger
  * /users/logout:
  *   post:
  *     summary: Log out a user
  *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Token'
  *     responses:
  *       200:
  *         description: Logout successful
  *       500:
  *         description: Server error
  */
-router.post("/logout", (req, res) => {
-  const { token } = req.body;
-  addTokenToBlacklist(token);
-  res.json({ message: "Logout successful" });
-});
 
 export default router;
