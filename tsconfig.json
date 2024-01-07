@@ -15,10 +15,10 @@
   },
   "include": [
     "src/**/*",
-    "__tests__/**/*", // Include test files
-    "jest.config.js" // Include Jest config if it's in TypeScript
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "__tests__",
+    "jest.config.js"
   ]
 }

@@ -1,13 +1,12 @@
-// __tests__/models/questionModel.test.ts
-
 import { Question } from "../../src/models/questionModel";
+import mongoose from "mongoose";
 
 describe("Question Model", () => {
   test("should validate a question with required fields", () => {
     const question = new Question({
       title: "Test Question",
       content: "This is a test question content.",
-      authorId: "author_id", // This should be a valid ObjectId
+      authorId: new mongoose.Types.ObjectId(), // Use a valid ObjectId
     });
 
     const validationError = question.validateSync();

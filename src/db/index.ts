@@ -6,7 +6,7 @@ const connectDB = async () => {
       process.env.MONGO_URI || "mongodb://localhost:27017/mydatabase",
       {},
     );
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`MongoDB Connected ${conn}`);
   } catch (error) {
     // Perform a type check to narrow down the error type
     if (error instanceof Error) {

@@ -74,7 +74,6 @@ async function startServer() {
     expressMiddleware(server, {
       context: async ({ req }): Promise<MyContext> => {
         const token = req.headers.authorization || "";
-        console.log("myToken====", token);
         const user = await getUserFromToken(token);
         return { user, req };
       },

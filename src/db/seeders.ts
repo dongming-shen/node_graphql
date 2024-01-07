@@ -1,8 +1,8 @@
 // src/db/seeders.ts
 import fs from "fs";
 
-import csv from "csv-parser";
 import { hash } from "bcryptjs";
+import csv from "csv-parser";
 import connectDB from ".";
 import { IUser, User } from "../models/userModel";
 

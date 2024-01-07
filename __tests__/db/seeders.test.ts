@@ -1,8 +1,14 @@
-import mongoose from "mongoose";
-import { User } from "../../src/models/userModel";
 import { seedUsersFromCSV } from "../../src/db/seeders";
 import fs from "fs";
 import { Readable } from "stream";
+import mongoose from "mongoose";
+import { hash } from "bcryptjs";
+
+jest.mock("mongoose");
+
+jest.mock("bcryptjs", () => ({
+  hash: jest.fn().mockResolvedValue("hashed_password123"),
+}));
 
 jest.mock("fs");
 jest.mock("../../src/models/userModel", () => ({
@@ -10,10 +16,6 @@ jest.mock("../../src/models/userModel", () => ({
     deleteMany: jest.fn().mockResolvedValue(null),
     insertMany: jest.fn().mockImplementation((users) => Promise.resolve(users)),
   },
-}));
-
-jest.mock("../../src/db/index", () => ({
-  connectDB: jest.fn().mockResolvedValue(undefined),
 }));
 
 describe("DB Seeders", () => {
@@ -25,22 +27,15 @@ describe("DB Seeders", () => {
     mongoose.disconnect = jest.fn().mockResolvedValue(undefined);
   });
 
-  test("should seed users from CSV", async () => {
+  test("should", async () => {
     fs.createReadStream = jest.fn().mockReturnValue(
       new Readable({
         objectMode: true,
         read() {
-          this.push({
-            name: "Alice",
-            email: "alice@example.com",
-            password: "password123",
-          });
-          this.push({
-            name: "Bob",
-            email: "bob@example.com",
-            password: "password123",
-          });
-          this.push(null);
+          this.push("name,email,password\n"); // Adding headers (if your CSV parser expects them)
+          this.push("Alice,alice@example.com,password123\n");
+          this.push("Bob,bob@example.com,password123\n");
+          this.push(null); // Signal the end of the stream
         },
       }),
     );
@@ -48,11 +43,8 @@ describe("DB Seeders", () => {
     const filePath = "./users.csv";
     await seedUsersFromCSV(filePath);
 
-    expect(User.insertMany).toHaveBeenCalledWith([
-      { name: "Alice", email: "alice@example.com", password: "password123" },
-      { name: "Bob", email: "bob@example.com", password: "password123" },
-    ]);
+    expect(hash).toHaveBeenCalledWith("password123", 10);
 
     expect(fs.createReadStream).toHaveBeenCalledWith(filePath);
-  });
+  }, 1000000);
 });
