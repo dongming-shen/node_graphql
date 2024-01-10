@@ -1,5 +1,4 @@
 import { hash, compare } from "bcryptjs";
-import { sign } from "jsonwebtoken";
 import { IQuestion, Question } from "../../models/questionModel";
 import { IUser, User } from "../../models/userModel";
 
@@ -8,15 +7,10 @@ import {
   CreateUserArgs,
   UpdateUserArgs,
   AuthArgs,
-  LogoutArgs,
   AuthPayload,
 } from "../types";
 import { MyContext } from "../../server";
-import {
-  JWT_SECRET,
-  addTokenToBlacklist,
-  generateToken,
-} from "../../utils/auth";
+import { addTokenToBlacklist, generateToken } from "../../utils/auth";
 
 // Define the type for authentication payload
 
