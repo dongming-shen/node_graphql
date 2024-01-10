@@ -3,6 +3,7 @@ type User {
   name: String!
   email: String!
   questions(page: Int, pageSize: Int): [Question]
+  # Add additional fields as necessary
 }
 
 type Question {
@@ -12,19 +13,41 @@ type Question {
   author: User
 }
 
+type Job {
+  id: ID!
+  desc: String!
+  requirements: String!
+  author: User
+  bids: [Bid] # Array of Bid IDs
+  # Add additional fields as necessary
+}
+
+type Bid {
+  id: ID!
+  author: User
+  job: Job
+  # Add additional fields as necessary
+}
+
 type Me {
   id: ID!
   email: String!
   name: String!
   token: String!
+  # Add additional fields as necessary
 }
 
 type Query {
   user(id: ID!): User
   users(page: Int, pageSize: Int): [User]
   question(id: ID!): Question
-  questions(page: Int, pageSize: Int): [Question]
-  me: User
+  questions: [Question]
+  me: Me
+  job(id: ID!): Job
+  top_jobs: [Job]
+  bid(id: ID!): Bid
+  bids(page: Int, pageSize: Int): [Bid]
+  # Add additional queries as necessary
 }
 
 type Mutation {
@@ -39,4 +62,12 @@ type Mutation {
   signup(name: String!, email: String!, password: String!): Me
   login(email: String!, password: String!): Me
   logout(token: String!): Boolean
+  createJob(desc: String!, requirements: String!, posterName: String!, posterContact: String!): Job
+  updateJob(id: ID!, desc: String, requirements: String, authorId: String): Job
+  deleteJob(id: ID!): String
+  deleteAllJobs: [Job]
+  createBid(jobId: String!, authorName: String!, authorContact: String!): Bid
+  deleteBid(id: ID!): String
+  deleteAllBids: [Bid]
+  # Add additional mutations as necessary
 }

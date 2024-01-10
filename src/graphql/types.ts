@@ -62,3 +62,22 @@ export interface AuthPayload {
 export interface LogoutArgs {
   token: string;
 }
+
+export interface JobArgs {
+  id: string;
+}
+
+export interface CreateJobArgs {
+  desc: string;
+  requirements: string;
+  posterName: string;
+  posterContact: string;
+}
+
+export interface CreateBidArgs {
+  jobId: string;
+  authorName: string;
+  authorContact: string; // Assuming this is an email
+  amount: number;
+  // Add other bid-related fields as necessary
+}

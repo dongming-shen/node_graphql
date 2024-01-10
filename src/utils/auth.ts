@@ -14,7 +14,7 @@ export const generateToken = (user: IUser) => {
     iat: Math.floor(Date.now() / 1000), // Issued at time, in Unix time
   };
 
-  return sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  return sign(payload, JWT_SECRET, { expiresIn: "3650d" });
 };
 
 export const verifyToken = (token: string) => {
@@ -43,7 +43,7 @@ export const getUserFromToken = async (
     console.log("====get me user====", user);
     return user;
   } catch (error) {
-    console.error("Error in getUserFromToken:", error);
+    // console.error("Error in getUserFromToken:", error);
     return null;
   }
 };

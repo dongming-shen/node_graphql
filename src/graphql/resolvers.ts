@@ -1,19 +1,25 @@
-import { questionResolvers } from "./resolvers/questionResolvers";
+import { BidResolvers } from "./resolvers/bidResolvers";
+import { JobResolvers } from "./resolvers/jobResolvers";
 import { userResolvers } from "./resolvers/userResolvers";
 
 export const resolvers = {
   User: {
     ...userResolvers.User,
   },
-  Question: {
-    ...questionResolvers.Question,
+  Job: {
+    ...JobResolvers.Job,
+  },
+  Bid: {
+    ...BidResolvers.Bid,
   },
   Query: {
     ...userResolvers.Query,
-    ...questionResolvers.Query,
+    ...JobResolvers.Query,
+    ...BidResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,
-    ...questionResolvers.Mutation,
+    ...JobResolvers.Mutation,
+    ...BidResolvers.Mutation,
   },
 };
