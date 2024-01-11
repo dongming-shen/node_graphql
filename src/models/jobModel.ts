@@ -5,6 +5,7 @@ export interface IJob extends Document {
   requirements: string;
   authorId: mongoose.Schema.Types.ObjectId; // Reference to User model
   winnner: mongoose.Schema.Types.ObjectId;
+  createdAt: string; // care
 }
 
 const JobSchema: Schema = new Schema(

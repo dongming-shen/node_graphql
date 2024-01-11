@@ -26,6 +26,7 @@ type Bid {
   id: ID!
   author: User
   job: Job
+  amount: Int
   # Add additional fields as necessary
 }
 
@@ -44,9 +45,10 @@ type Query {
   questions: [Question]
   me: Me
   job(id: ID!): Job
-  top_jobs: [Job]
+  top_jobs: [Job],
+  recent_jobs: [Job],
   bid(id: ID!): Bid
-  bids(page: Int, pageSize: Int): [Bid]
+  bids: [Bid]
   # Add additional queries as necessary
 }
 
@@ -66,8 +68,6 @@ type Mutation {
   updateJob(id: ID!, desc: String, requirements: String, authorId: String): Job
   deleteJob(id: ID!): String
   deleteAllJobs: [Job]
-  createBid(jobId: String!, authorName: String!, authorContact: String!): Bid
-  deleteBid(id: ID!): String
-  deleteAllBids: [Bid]
+  createBid(jobId: String!, authorName: String!, authorContact: String!, amount: Int!): Bid
   # Add additional mutations as necessary
 }
